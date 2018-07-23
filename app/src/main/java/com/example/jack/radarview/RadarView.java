@@ -9,8 +9,13 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RadarView extends View{
     public Paint mCirclePaint=new Paint();
+    public List<String> name=new ArrayList<>();
+
     public int broad_color=0;
 
     public RadarView(Context context) {
@@ -19,6 +24,12 @@ public class RadarView extends View{
 
     public RadarView(Context context, AttributeSet attrs){
         this(context,attrs,0);
+    }
+
+    public void setName(List<String> name) {
+        if(this.name.size()==0){
+            this.name.addAll(name);
+        }
     }
 
     public RadarView(Context context,AttributeSet attrs,int defStyleAttr){
@@ -77,33 +88,37 @@ public class RadarView extends View{
         drawRadarBroad(canvas,radius*((float)1/2));
         drawRadarBroad(canvas,radius*((float)1/4));
         drawPointLine(canvas,radius);
-
+        drawText(canvas,radius);
 
     }
 
     public void drawPointLine(Canvas canvas,float radius){
         Path path=new Path();
         path.moveTo(0,0);
-        path.lineTo(0,radius);
+        path.lineTo(0,-radius);
         canvas.drawPath(path, mCirclePaint);
 
         double[] rightTop=getTopAngle(radius);
         Path path2=new Path();
         path2.moveTo(0,0);
         path2.lineTo(Double.valueOf(rightTop[0]).floatValue(),-Double.valueOf(rightTop[1]).floatValue());
+        canvas.drawPath(path2, mCirclePaint);
+
         Path path3=new Path();
         path3.moveTo(0,0);
-        path3.lineTo(-Double.valueOf(rightTop[0]).floatValue(),Double.valueOf(rightTop[1]).floatValue());
-        canvas.drawPath(path, mCirclePaint);
+        path3.lineTo(-Double.valueOf(rightTop[0]).floatValue(),-Double.valueOf(rightTop[1]).floatValue());
+        canvas.drawPath(path3, mCirclePaint);
 
         double[] rightBottom=getBottomAngle(radius);
         Path path4=new Path();
         path4.moveTo(0,0);
         path4.lineTo(-Double.valueOf(rightBottom[0]).floatValue(),Double.valueOf(rightBottom[1]).floatValue());
+        canvas.drawPath(path4, mCirclePaint);
+
         Path path5=new Path();
         path5.moveTo(0,0);
-        path5.lineTo(-Double.valueOf(rightBottom[0]).floatValue(),-Double.valueOf(rightBottom[1]).floatValue());
-        canvas.drawPath(path, mCirclePaint);
+        path5.lineTo(-Double.valueOf(-rightBottom[0]).floatValue(),Double.valueOf(rightBottom[1]).floatValue());
+        canvas.drawPath(path5, mCirclePaint);
     }
 
     public void drawRadarBroad(Canvas canvas,float radius){
@@ -125,6 +140,9 @@ public class RadarView extends View{
         canvas.drawPath(path, mCirclePaint);
     }
 
+    public void drawText(Canvas canvas,float radius){
+
+    }
 
     public double[] getTopAngle(float radius){
         double[] param=new double[2];
@@ -139,6 +157,7 @@ public class RadarView extends View{
         param[1]=Math.sin(Math.toRadians(54))*radius;
         return param;
     }
+
 
 
 }

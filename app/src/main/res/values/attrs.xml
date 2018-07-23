@@ -2,9 +2,8 @@
 <resources>
 
     <declare-styleable name="RadarView">
-
         <attr name="broad_color" format="color"></attr>
-
+        <attr name="broad_text" format="reference"></attr>
     </declare-styleable>
 
 </resources>
