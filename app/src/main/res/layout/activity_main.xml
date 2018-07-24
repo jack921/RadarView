@@ -7,9 +7,10 @@
     tools:context=".MainActivity">
 
    <com.example.jack.radarview.RadarView
+       android:id="@+id/radarView"
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
        app:broad_color="@color/colorPrimary"
-       android:background="@color/colorAccent"/>
+       android:background="@color/colorAccent" />
 
 </android.support.constraint.ConstraintLayout>

@@ -3,7 +3,7 @@
 
     <declare-styleable name="RadarView">
         <attr name="broad_color" format="color"></attr>
-        <attr name="broad_text" format="reference"></attr>
+        <attr name="broad_text_size" format="dimension"></attr>
     </declare-styleable>
 
 </resources>
