@@ -4,6 +4,8 @@
     <declare-styleable name="RadarView">
         <attr name="broad_color" format="color"></attr>
         <attr name="broad_text_size" format="dimension"></attr>
+        <attr name="mark_color" format="color"></attr>
+        <attr name="mark_broad_color" format="color"></attr>
     </declare-styleable>
 
 </resources>
