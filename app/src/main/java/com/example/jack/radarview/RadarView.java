@@ -18,6 +18,7 @@ public class RadarView extends View{
     private Paint mBroadPaint=new Paint();
     private Paint mMarkEasePaint =new Paint();
     private Paint mMarkPaint=new Paint();
+    private Paint mCircleHoldPaint=new Paint();
 
     private List<String> cornerName=new ArrayList<>();
     private List<Float> listData=new ArrayList<>();
@@ -88,7 +89,11 @@ public class RadarView extends View{
         mMarkEasePaint.setAntiAlias(true);
         mMarkEasePaint.setColor(mark_color);
         mMarkEasePaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        mMarkEasePaint.setAlpha(80);
+        mMarkEasePaint.setAlpha(70);
+
+        mCircleHoldPaint=new Paint();
+        mCircleHoldPaint.setAntiAlias(true);
+        mCircleHoldPaint.setStyle(Paint.Style.FILL_AND_STROKE);
     }
 
     public void setCornerName(List<String> cornerList) {
@@ -135,6 +140,8 @@ public class RadarView extends View{
         drawText(canvas,radius);
         //画出数值区域
         drawData(canvas,radius);
+        //画出各个点
+        circleHoldPaint(canvas,radius);
     }
 
     public void drawData(Canvas canvas,float radius){
@@ -146,24 +153,62 @@ public class RadarView extends View{
            float tempRadius= (listData.get(i)/maxValue)*radius;
            if(i==0){
                path.moveTo(0,-tempRadius);
+               canvas.drawCircle(0,-tempRadius,5,mCircleHoldPaint);
            }else if(i==1){
                double[] rightTop=getTopAngle(tempRadius);
                path.lineTo(Double.valueOf(rightTop[0]).floatValue(),-Double.valueOf(rightTop[1]).floatValue());
+               canvas.drawCircle(Double.valueOf(rightTop[0]).floatValue(),
+                       -Double.valueOf(rightTop[1]).floatValue(),5,mCircleHoldPaint);
            }else if(i==2){
                double[] rightBottom=getBottomAngle(tempRadius);
                path.lineTo(Double.valueOf(rightBottom[0]).floatValue(),Double.valueOf(rightBottom[1]).floatValue());
+               canvas.drawCircle(Double.valueOf(rightBottom[0]).floatValue(),
+                       Double.valueOf(rightBottom[1]).floatValue(),5,mCircleHoldPaint);
            }else if(i==3){
                double[] leftBottom=getBottomAngle(tempRadius);
                path.lineTo(-Double.valueOf(leftBottom[0]).floatValue(),Double.valueOf(leftBottom[1]).floatValue());
+               canvas.drawCircle(-Double.valueOf(leftBottom[0]).floatValue(),
+                       Double.valueOf(leftBottom[1]).floatValue(),5,mCircleHoldPaint);
            }else if(i==4){
                double[] leftTop=getTopAngle(tempRadius);
                path.lineTo(-Double.valueOf(leftTop[0]).floatValue(),-Double.valueOf(leftTop[1]).floatValue());
+               canvas.drawCircle(-Double.valueOf(leftTop[0]).floatValue(),
+                       -Double.valueOf(leftTop[1]).floatValue(),5,mCircleHoldPaint);
                path.close();
            }
         }
         canvas.drawPath(path,mMarkEasePaint);
         canvas.drawPath(path,mMarkPaint);
     }
+
+    public void circleHoldPaint(Canvas canvas,float radius){
+        if(maxValue==0){
+            maxValue=Collections.max(listData);
+        }
+        for(int i=0;i<listData.size();i++){
+            float tempRadius= (listData.get(i)/maxValue)*radius;
+            if(i==0){
+                canvas.drawCircle(0,-tempRadius,5,mCircleHoldPaint);
+            }else if(i==1){
+                double[] rightTop=getTopAngle(tempRadius);
+                canvas.drawCircle(Double.valueOf(rightTop[0]).floatValue(),
+                        -Double.valueOf(rightTop[1]).floatValue(),5,mCircleHoldPaint);
+            }else if(i==2){
+                double[] rightBottom=getBottomAngle(tempRadius);
+                canvas.drawCircle(Double.valueOf(rightBottom[0]).floatValue(),
+                        Double.valueOf(rightBottom[1]).floatValue(),5,mCircleHoldPaint);
+            }else if(i==3){
+                double[] leftBottom=getBottomAngle(tempRadius);
+                canvas.drawCircle(-Double.valueOf(leftBottom[0]).floatValue(),
+                        Double.valueOf(leftBottom[1]).floatValue(),5,mCircleHoldPaint);
+            }else if(i==4){
+                double[] leftTop=getTopAngle(tempRadius);
+                canvas.drawCircle(-Double.valueOf(leftTop[0]).floatValue(),
+                        -Double.valueOf(leftTop[1]).floatValue(),5,mCircleHoldPaint);
+            }
+        }
+    }
+
 
     /**
      * 画出雷达图的边
