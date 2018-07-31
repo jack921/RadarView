@@ -22,6 +22,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+//        setData();
+
         RadarView radarView=findViewById(R.id.radarView);
         List<String> listString=new ArrayList<>();
         listString.add("输出");
@@ -32,15 +34,14 @@ public class MainActivity extends AppCompatActivity {
         radarView.setCornerName(listString);
 
         List<Float> listData=new ArrayList<>();
-        listData.add(2.1f);
-        listData.add(8.0f);
-        listData.add(6.5f);
-        listData.add(3.2f);
-        listData.add(5.1f);
+        listData.add(2f);
+        listData.add(4f);
+        listData.add(6f);
+        listData.add(8f);
+        listData.add(5f);
         radarView.setData(listData);
 
         radarView.setMaxValue(10f);
-
     }
 
     public void setData() {

@@ -1,5 +1,6 @@
 package com.example.jack.radarview;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -7,9 +8,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,17 +21,21 @@ public class RadarView extends View{
     private Paint mMarkEasePaint =new Paint();
     private Paint mMarkPaint=new Paint();
     private Paint mCircleHoldPaint=new Paint();
-
+    private Paint mDrawTextPaint=new Paint();
+    private float mBroadStrokeWidth=1.5f;
+    private float mMarkBroadStrokeWidth=1.5f;
+    private int mMarkEaseAlpha=70;
     private List<String> cornerName=new ArrayList<>();
     private List<Float> listData=new ArrayList<>();
     private int broad_color=Color.parseColor("#d1d1d1");
     private int mark_color=Color.parseColor("#7cfc00");
     private int mark_broad_color=Color.parseColor("#7cfc00");
-
-    private int corner_textSize=(int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
-            16,getResources().getDisplayMetrics());
-
+    private int corner_textSize=(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,16,getResources().getDisplayMetrics());
     private float maxValue=0f;
+
+    private int mBroadAlpha=0;
+    private Float radius=0f;
+
 
     public RadarView(Context context) {
         this(context,null);
@@ -66,34 +72,65 @@ public class RadarView extends View{
         initValue();
     }
 
-    public void setMaxValue(float maxValue) {
-        this.maxValue = maxValue;
-    }
-
     public void setData(List<Float> listData){
         this.listData.clear();
         this.listData.addAll(listData);
     }
 
+    public void setMaxValue(float maxValue) {
+        this.maxValue = maxValue;
+    }
+
+    public void setmBroadStrokeWidth(float mBroadStrokeWidth) {
+        this.mBroadStrokeWidth = mBroadStrokeWidth;
+    }
+    public void setmMarkBroadStrokeWidth(float mMarkBroadStrokeWidth) {
+        this.mMarkBroadStrokeWidth = mMarkBroadStrokeWidth;
+    }
+
+    public void setMarkEaseAlpha(int markEaseAlpha) {
+        this.mMarkEaseAlpha = markEaseAlpha;
+    }
+
+    public void setCorneTextSize(int cornerTextSize){
+        this.corner_textSize=cornerTextSize;
+    }
+
+    public void setBroadColor(int broadColor){
+        this.broad_color=broadColor;
+    }
+
+    public void setMarkColor(int markColor){
+        this.mark_color=markColor;
+    }
+
+    public void setMarkBroadColor(int markBroadColor){
+        this.mark_broad_color=mark_broad_color;
+    }
+
     public void initValue(){
         mBroadPaint.setColor(broad_color);
         mBroadPaint.setStyle(Paint.Style.STROKE);
-        mBroadPaint.setStrokeWidth(1.5f);
+        mBroadPaint.setStrokeWidth(mBroadStrokeWidth);
         mBroadPaint.setAntiAlias(true);
 
         mMarkPaint.setColor(mark_broad_color);
         mMarkPaint.setStyle(Paint.Style.STROKE);
-        mMarkPaint.setStrokeWidth(1.5f);
+        mMarkPaint.setStrokeWidth(mMarkBroadStrokeWidth);
         mMarkPaint.setAntiAlias(true);
 
         mMarkEasePaint.setAntiAlias(true);
         mMarkEasePaint.setColor(mark_color);
         mMarkEasePaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        mMarkEasePaint.setAlpha(70);
+        mMarkEasePaint.setAlpha(mMarkEaseAlpha);
 
         mCircleHoldPaint=new Paint();
         mCircleHoldPaint.setAntiAlias(true);
         mCircleHoldPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+
+        mDrawTextPaint=new Paint();
+        mDrawTextPaint.setTextSize(corner_textSize);
+        mDrawTextPaint.setColor(broad_color);
     }
 
     public void setCornerName(List<String> cornerList) {
@@ -124,11 +161,18 @@ public class RadarView extends View{
     }
 
     @Override
+    protected void onSizeChanged(int width, int height, int oldw, int oldh) {
+        super.onSizeChanged(width, height, oldw, oldh);
+        radius=(float)Math.min(width,height)/3;
+        loadStartAnimator();
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         canvas.translate(getWidth()/2,getHeight()/2);
         canvas.save();
-        float radius=getHeight()/3;
+//        radius=(float)Math.min(getHeight(),getWidth())/3;
         //画雷达图的边
         drawRadarBroad(canvas,radius);
         drawRadarBroad(canvas,radius*((float)3/4));
@@ -144,9 +188,37 @@ public class RadarView extends View{
         circleHoldPaint(canvas,radius);
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch(event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                Log.e("onTouchEvent_DOWN",event.getX()+","+event.getY());
+                break;
+            case MotionEvent.ACTION_UP:
+                Log.e("onTouchEvent_UP",event.getX()+","+event.getY());
+                break;
+            case MotionEvent.ACTION_MOVE:
+                Log.e("onTouchEvent_MOVE",event.getX()+","+event.getY());
+                break;
+            default:
+                break;
+        }
+        return true;
+    }
+
+    @Override
+    public void computeScroll() {
+        super.computeScroll();
+    }
+
+    /**
+     * 画出数值区域
+     * @param canvas
+     * @param radius
+     */
     public void drawData(Canvas canvas,float radius){
         if(maxValue==0){
-           maxValue=Collections.max(listData);
+            maxValue=Collections.max(listData);
         }
         Path path=new Path();
         for(int i=0;i<listData.size();i++){
@@ -181,6 +253,11 @@ public class RadarView extends View{
         canvas.drawPath(path,mMarkPaint);
     }
 
+    /**
+     * 画出各个点
+     * @param canvas
+     * @param radius
+     */
     public void circleHoldPaint(Canvas canvas,float radius){
         if(maxValue==0){
             maxValue=Collections.max(listData);
@@ -208,7 +285,6 @@ public class RadarView extends View{
             }
         }
     }
-
 
     /**
      * 画出雷达图的边
@@ -267,6 +343,7 @@ public class RadarView extends View{
         path5.lineTo(-Double.valueOf(-rightBottom[0]).floatValue(),Double.valueOf(rightBottom[1]).floatValue());
         path5.close();
 
+        mBroadPaint.setAlpha(mBroadAlpha);
         canvas.drawPath(path5, mBroadPaint);
     }
 
@@ -276,46 +353,43 @@ public class RadarView extends View{
      * @param radius
      */
     public void drawText(Canvas canvas,float radius){
-        Paint paint=new Paint();
-        paint.setTextSize(corner_textSize);
-        paint.setColor(broad_color);
         double[] rightTop=getTopAngle(radius);
         double[] rightBottom=getBottomAngle(radius);
         for(int i=0;i<cornerName.size();i++){
             if(i==0){
                 canvas.save();
                 canvas.translate(0,-radius);
-                float textWidth = paint.measureText(cornerName.get(i));
-                float baseLineY = Math.abs(paint.ascent() + paint.descent())/2;
-                canvas.drawText(cornerName.get(i),-textWidth/2,-baseLineY,paint);
+                float textWidth = mDrawTextPaint.measureText(cornerName.get(i));
+                float baseLineY = Math.abs(mDrawTextPaint.ascent() + mDrawTextPaint.descent())/2;
+                canvas.drawText(cornerName.get(i),-textWidth/2,-baseLineY,mDrawTextPaint);
                 canvas.restore();
             }else if(i==1){
                 canvas.save();
                 canvas.translate(Double.valueOf(rightTop[0]).floatValue(),-Double.valueOf(rightTop[1]).floatValue());
-                float textWidth2=paint.measureText(cornerName.get(i));
-                float baseLiney2=Math.abs(paint.ascent()+paint.descent())/2;
-                canvas.drawText(cornerName.get(i),textWidth2/5,baseLiney2,paint);
+                float textWidth2=mDrawTextPaint.measureText(cornerName.get(i));
+                float baseLiney2=Math.abs(mDrawTextPaint.ascent()+mDrawTextPaint.descent())/2;
+                canvas.drawText(cornerName.get(i),textWidth2/5,baseLiney2,mDrawTextPaint);
                 canvas.restore();
             }else if(i==2){
                 canvas.save();
                 canvas.translate(Double.valueOf(rightBottom[0]).floatValue(),Double.valueOf(rightBottom[1]).floatValue());
-                float textWidth3=paint.measureText(cornerName.get(i));
-                float baseLiney3=Math.abs(paint.ascent()+paint.descent());
-                canvas.drawText(cornerName.get(i),-textWidth3/3,baseLiney3+15,paint);
+                float textWidth3=mDrawTextPaint.measureText(cornerName.get(i));
+                float baseLiney3=Math.abs(mDrawTextPaint.ascent()+mDrawTextPaint.descent());
+                canvas.drawText(cornerName.get(i),-textWidth3/3,baseLiney3+15,mDrawTextPaint);
                 canvas.restore();
             }else if(i==3){
                 canvas.save();
                 canvas.translate(Double.valueOf(-rightBottom[0]).floatValue(),Double.valueOf(rightBottom[1]).floatValue());
-                float textWidth4=paint.measureText(cornerName.get(i));
-                float baseLiney4=Math.abs(paint.ascent()+paint.descent());
-                canvas.drawText(cornerName.get(i),-textWidth4/2,baseLiney4+15,paint);
+                float textWidth4=mDrawTextPaint.measureText(cornerName.get(i));
+                float baseLiney4=Math.abs(mDrawTextPaint.ascent()+mDrawTextPaint.descent());
+                canvas.drawText(cornerName.get(i),-textWidth4/2,baseLiney4+15,mDrawTextPaint);
                 canvas.restore();
             }else if(i==4){
                 canvas.save();
                 canvas.translate(-Double.valueOf(rightTop[0]).floatValue(),-Double.valueOf(rightTop[1]).floatValue());
-                float textWidth5=paint.measureText(cornerName.get(i));
-                float baseLiney5=Math.abs(paint.ascent()+paint.descent())/2;
-                canvas.drawText(cornerName.get(i),-textWidth5-10,baseLiney5,paint);
+                float textWidth5=mDrawTextPaint.measureText(cornerName.get(i));
+                float baseLiney5=Math.abs(mDrawTextPaint.ascent()+mDrawTextPaint.descent())/2;
+                canvas.drawText(cornerName.get(i),-textWidth5-10,baseLiney5,mDrawTextPaint);
                 canvas.restore();
             }
         }
@@ -345,6 +419,41 @@ public class RadarView extends View{
         return param;
     }
 
+    /**
+     * 数字转化为dp
+     * @param value
+     * @return
+     */
+    public int convertDpToPixel(float value){
+        return (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
+                value,getResources().getDisplayMetrics());
+    }
+
+    /**
+     * 创建动画
+     */
+    public void loadStartAnimator(){
+        ValueAnimator alphaAnimator=ValueAnimator.ofInt(0,225);
+        alphaAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                mBroadAlpha=(int)valueAnimator.getAnimatedValue();
+                postInvalidate();
+            }
+        });
+        final ValueAnimator radiusAnimator=ValueAnimator.ofFloat(0,radius);
+        radiusAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                radius=(Float)radiusAnimator.getAnimatedValue();
+                postInvalidate();
+            }
+        });
+        alphaAnimator.setDuration(3000);
+        radiusAnimator.setDuration(3000);
+        alphaAnimator.start();
+        radiusAnimator.start();
+    }
 
 
 }
