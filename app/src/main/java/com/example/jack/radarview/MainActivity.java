@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         radarView.setData(listData);
 
         radarView.setMaxValue(10f);
+
     }
 
     public void setData() {
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         entries1.add(new RadarEntry(312));
         entries1.add(new RadarEntry(400));
         entries1.add(new RadarEntry(510));
+        entries1.add(new RadarEntry(270));
         RadarDataSet set1 = new RadarDataSet(entries1, "Last Week");
         set1.setColor(Color.rgb(103, 110, 129));
         set1.setFillColor(Color.rgb(103, 110, 129));
