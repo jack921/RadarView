@@ -10,9 +10,11 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Scroller;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +45,7 @@ public class RadarView extends View{
 
     private float FLIP_DISTANCE = 50;
     private GestureDetector mDetector;
+    private Display display =null;
     private Scroller scroller;
 
     private float[] listAngle;
@@ -58,6 +61,7 @@ public class RadarView extends View{
 
     public RadarView(Context context,AttributeSet attrs,int defStyleAttr){
         super(context,attrs,defStyleAttr);
+        display=((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         TypedArray typedArray=context.getTheme().obtainStyledAttributes(attrs,R.styleable.RadarView,defStyleAttr,0);
         int numCount=typedArray.getIndexCount();
         for(int i=0;i<numCount;i++){
@@ -82,33 +86,6 @@ public class RadarView extends View{
         typedArray.recycle();
         initValue();
     }
-
-    private GestureDetector.SimpleOnGestureListener mGestureListener=new GestureDetector.SimpleOnGestureListener(){
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (e1.getX() - e2.getX() > FLIP_DISTANCE) {
-                Log.i("MYTAG", "向左滑...");
-                return true;
-            }
-            if (e2.getX() - e1.getX() > FLIP_DISTANCE) {
-                Log.i("MYTAG", "向右滑...");
-                return true;
-            }
-            if (e1.getY() - e2.getY() > FLIP_DISTANCE) {
-                Log.i("MYTAG", "向上滑...");
-                return true;
-            }
-            if (e2.getY() - e1.getY() > FLIP_DISTANCE) {
-                Log.i("MYTAG", "向下滑...");
-                return true;
-            }
-            return true;
-        }
-        @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            return true;
-        }
-    };
 
     public void setData(List<Float> listData){
         this.listData.clear();
@@ -284,6 +261,34 @@ public class RadarView extends View{
         super.computeScroll();
     }
 
+    private GestureDetector.SimpleOnGestureListener mGestureListener=new GestureDetector.SimpleOnGestureListener(){
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            float tempRadius=0;
+            if (e1.getX() - e2.getX() > FLIP_DISTANCE) {//向左滑
+                 tempRadius=360*(Math.abs((e1.getX()-e2.getX())/display.getWidth()));
+            }
+            if (e2.getX() - e1.getX() > FLIP_DISTANCE) {//向右滑
+                tempRadius=360*(Math.abs((e2.getX()-e1.getX())/display.getWidth()));
+            }
+            if (e1.getY() - e2.getY() > FLIP_DISTANCE) {//向上滑
+                tempRadius=360*(Math.abs((e1.getY()-e2.getY())/display.getHeight()));
+            }
+            if (e2.getY() - e1.getY() > FLIP_DISTANCE) {//向下滑
+                tempRadius=360*(Math.abs((e2.getY()-e1.getY())/display.getWidth()));
+            }
+            Log.e("tempRadius",tempRadius+"");
+
+
+//            postInvalidate();
+            return true;
+        }
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            return true;
+        }
+    };
+
     /**
      * 根据距离差判断 滑动方向
      * @param dx X轴的距离差
@@ -375,30 +380,6 @@ public class RadarView extends View{
            }
            canvas.restore();
        }
-    }
-
-    /**
-     * 计算左右上角的坐标
-     * @param radius
-     * @return
-     */
-    public double[] getTopAngle(float radius){
-        double[] param=new double[2];
-        param[0]=Math.sin(Math.toRadians(72))*radius;
-        param[1]=Math.sin(Math.toRadians(18))*radius;
-        return param;
-    }
-
-    /**
-     * 计算左右下角的坐标
-     * @param radius
-     * @return
-     */
-    public double[] getBottomAngle(float radius){
-        double[] param=new double[2];
-        param[0]=Math.sin(Math.toRadians(36))*radius;
-        param[1]=Math.sin(Math.toRadians(54))*radius;
-        return param;
     }
 
     /**
