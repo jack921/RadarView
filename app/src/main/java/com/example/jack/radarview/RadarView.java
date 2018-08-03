@@ -375,7 +375,7 @@ public class RadarView extends View{
            }else if(i==2){
                canvas.drawText(cornerName.get(i),0,baseLineY*2,mDrawTextPaint);
            }else if(i==3){
-               canvas.drawText(cornerName.get(i),0,baseLineY,mDrawTextPaint);
+               canvas.drawText(cornerName.get(i),0,-baseLineY,mDrawTextPaint);
            }else{
                canvas.drawText(cornerName.get(i),-textWidth/2,-baseLineY,mDrawTextPaint);
            }
