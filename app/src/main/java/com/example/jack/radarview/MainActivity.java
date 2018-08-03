@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         radarView.setCornerName(listString);
 
         List<Float> listData=new ArrayList<>();
-        listData.add(2f);
+        listData.add(2.5f);
         listData.add(4f);
         listData.add(6f);
         listData.add(8f);

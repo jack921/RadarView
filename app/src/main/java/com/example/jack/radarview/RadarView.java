@@ -368,16 +368,10 @@ public class RadarView extends View{
            float textWidth = mDrawTextPaint.measureText(cornerName.get(i));
            float baseLineY = Math.abs(mDrawTextPaint.ascent()+mDrawTextPaint.descent())/2;
            canvas.rotate(-180);
-           if(i==0){
-               canvas.drawText(cornerName.get(i),-textWidth,-baseLineY,mDrawTextPaint);
-           }else if(i==1){
-               canvas.drawText(cornerName.get(i),-textWidth,baseLineY*2,mDrawTextPaint);
-           }else if(i==2){
-               canvas.drawText(cornerName.get(i),0,baseLineY*2,mDrawTextPaint);
-           }else if(i==3){
-               canvas.drawText(cornerName.get(i),0,-baseLineY,mDrawTextPaint);
-           }else{
+           if(((int)temp[0])==0){
                canvas.drawText(cornerName.get(i),-textWidth/2,-baseLineY,mDrawTextPaint);
+           }else{
+               canvas.drawText(cornerName.get(i),temp[0]>0?-textWidth:0,temp[1]>0?-baseLineY:baseLineY*2,mDrawTextPaint);
            }
            canvas.restore();
        }
