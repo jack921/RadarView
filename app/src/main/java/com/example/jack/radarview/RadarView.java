@@ -265,22 +265,27 @@ public class RadarView extends View{
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             float tempRadius=0;
-            if (e1.getX() - e2.getX() > FLIP_DISTANCE) {//向左滑
-                 tempRadius=360*(Math.abs((e1.getX()-e2.getX())/display.getWidth()));
+            String type="";
+            if (e1.getX()-e2.getX() > FLIP_DISTANCE) {//向左滑
+                type="向左滑";
+                tempRadius=-(360*((e1.getX()-e2.getX())/display.getWidth()));
+            }else if (e2.getX()-e1.getX() > FLIP_DISTANCE) {//向右滑
+                type="向右滑";
+                tempRadius=360*((e2.getX()-e1.getX())/display.getWidth());
+            }else if (e1.getY()-e2.getY() > FLIP_DISTANCE) {//向上滑
+                type="向上滑";
+                tempRadius=-(360*((e1.getY()-e2.getY())/display.getHeight()));
+            }else if (e2.getY()-e1.getY() > FLIP_DISTANCE) {//向下滑
+                type="向下滑";
+                tempRadius=360*((e2.getY()-e1.getY())/display.getWidth());
             }
-            if (e2.getX() - e1.getX() > FLIP_DISTANCE) {//向右滑
-                tempRadius=360*(Math.abs((e2.getX()-e1.getX())/display.getWidth()));
+            if(tempRadius==0){
+                return true;
             }
-            if (e1.getY() - e2.getY() > FLIP_DISTANCE) {//向上滑
-                tempRadius=360*(Math.abs((e1.getY()-e2.getY())/display.getHeight()));
+            for(int i=0;i<listAngle.length;i++){
+                listAngle[i]-=(tempRadius/20);
             }
-            if (e2.getY() - e1.getY() > FLIP_DISTANCE) {//向下滑
-                tempRadius=360*(Math.abs((e2.getY()-e1.getY())/display.getWidth()));
-            }
-            Log.e("tempRadius",tempRadius+"");
-
-
-//            postInvalidate();
+            postInvalidate();
             return true;
         }
         @Override
