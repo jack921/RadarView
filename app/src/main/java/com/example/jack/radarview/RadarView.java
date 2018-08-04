@@ -265,52 +265,54 @@ public class RadarView extends View{
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             float tempRadius=0;
-            String type="123";
-            if (e1.getX()-e2.getX() > FLIP_DISTANCE) {//向左滑
-                type="向左滑";
+            String actionText="";
+            int action=detectDicr(e1.getX(),e1.getY(),e2.getX(),e2.getY());
+            if(action==1){//上
+                tempRadius=-(360*((e2.getY()-e1.getY())/display.getHeight()));
+                actionText="上";
+            }else if(action==2){//下
+                tempRadius=360*((e1.getY()-e2.getY())/display.getHeight());
+                actionText="下";
+            }else if(action==3){//左
+                tempRadius=360*((e1.getX()-e2.getX())/display.getWidth());
+                actionText="左";
+            }else if(action==4){//右
+                actionText="右";
                 tempRadius=-(360*((e1.getX()-e2.getX())/display.getWidth()));
-            }else if (e2.getX()-e1.getX() > FLIP_DISTANCE) {//向右滑
-                type="向右滑";
-                tempRadius=360*((e2.getX()-e1.getX())/display.getWidth());
-            }else if (e1.getY()-e2.getY() > FLIP_DISTANCE) {//向上滑
-                type="向上滑";
-                tempRadius=-(360*((e1.getY()-e2.getY())/display.getHeight()));
-            }else if (e2.getY()-e1.getY() > FLIP_DISTANCE) {//向下滑
-                type="向下滑";
-                tempRadius=360*((e2.getY()-e1.getY())/display.getWidth());
-            }
-            if(tempRadius==0){
-                return true;
             }
             for(int i=0;i<listAngle.length;i++){
-                listAngle[i]-=(tempRadius/20);
+                listAngle[i]-=(tempRadius/10);
             }
-            Log.e("type",type+"");
-            Log.e("type2",tempRadius+"");
             postInvalidate();
+            Log.e("detectDicr",tempRadius+"");
             return true;
         }
         @Override
         public boolean onFling(MotionEvent arg0, MotionEvent arg1, float arg2, float velocityY) {
-            int mini_width=120;
-            int mini_speed=0;
-            float distance_right=arg1.getX()-arg0.getX();
-            float distance_left=arg0.getX()-arg1.getX();
-            float distance_down=arg1.getY()-arg0.getY();
-            float distance_up=arg0.getY()-arg1.getY();
-            if(distance_right>mini_width && Math.abs(arg2)>mini_speed){
-                Log.e("", "onFling-"+"向右滑动");
-            } else if(distance_left>mini_width && Math.abs(arg2)>mini_speed){
-                Log.e("", "onFling-"+"向左滑动");
-            } else if(distance_down>mini_width && Math.abs(arg2)>mini_speed){
-                Log.e("", "onFling-"+"向下滑动");
-            } else if(distance_up>mini_width && Math.abs(arg2)>mini_speed){
-                Log.e("", "onFling-"+"向上滑动");
-            }
 
             return true;
         }
     };
+
+    //通过手势来移动方块：1,2,3,4对应上下左右
+    private int detectDicr(float start_x,float start_y,float end_x,float end_y){
+        boolean isLeftOrRight = Math.abs(start_x - end_x) > Math.abs(start_y - end_y) ? true : false;
+        if (isLeftOrRight){
+            if (start_x - end_x > 0){
+                return 3;
+            }else if (start_x - end_x < 0){
+                return 4;
+            }
+        }else {
+            if (start_y - end_y > 0){
+                return 1;
+            }else if (start_y - end_y < 0){
+                return 2;
+            }
+        }
+        return 0;
+    }
+
 
     /**
      * 根据距离差判断 滑动方向
