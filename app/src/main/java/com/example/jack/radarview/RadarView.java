@@ -265,7 +265,7 @@ public class RadarView extends View{
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             float tempRadius=0;
-            String type="";
+            String type="123";
             if (e1.getX()-e2.getX() > FLIP_DISTANCE) {//向左滑
                 type="向左滑";
                 tempRadius=-(360*((e1.getX()-e2.getX())/display.getWidth()));
@@ -285,11 +285,29 @@ public class RadarView extends View{
             for(int i=0;i<listAngle.length;i++){
                 listAngle[i]-=(tempRadius/20);
             }
+            Log.e("type",type+"");
+            Log.e("type2",tempRadius+"");
             postInvalidate();
             return true;
         }
         @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        public boolean onFling(MotionEvent arg0, MotionEvent arg1, float arg2, float velocityY) {
+            int mini_width=120;
+            int mini_speed=0;
+            float distance_right=arg1.getX()-arg0.getX();
+            float distance_left=arg0.getX()-arg1.getX();
+            float distance_down=arg1.getY()-arg0.getY();
+            float distance_up=arg0.getY()-arg1.getY();
+            if(distance_right>mini_width && Math.abs(arg2)>mini_speed){
+                Log.e("", "onFling-"+"向右滑动");
+            } else if(distance_left>mini_width && Math.abs(arg2)>mini_speed){
+                Log.e("", "onFling-"+"向左滑动");
+            } else if(distance_down>mini_width && Math.abs(arg2)>mini_speed){
+                Log.e("", "onFling-"+"向下滑动");
+            } else if(distance_up>mini_width && Math.abs(arg2)>mini_speed){
+                Log.e("", "onFling-"+"向上滑动");
+            }
+
             return true;
         }
     };
