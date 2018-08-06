@@ -45,9 +45,7 @@ public class RadarView extends View{
     private float maxValue=0f;
     private Float radius=0f;
 
-    private float FLIP_DISTANCE = 50;
     private GestureDetector mDetector;
-    private Display display =null;
     private Scroller scroller;
 
     private float[] listAngle;
@@ -64,7 +62,6 @@ public class RadarView extends View{
 
     public RadarView(Context context,AttributeSet attrs,int defStyleAttr){
         super(context,attrs,defStyleAttr);
-        display=((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         TypedArray typedArray=context.getTheme().obtainStyledAttributes(attrs,R.styleable.RadarView,defStyleAttr,0);
         int numCount=typedArray.getIndexCount();
         for(int i=0;i<numCount;i++){
@@ -254,16 +251,6 @@ public class RadarView extends View{
     }
 
     @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (mDetector != null) {
-            if (mDetector.onTouchEvent(ev))
-                return true;
-        }
-        return super.dispatchTouchEvent(ev);
-    }
-
-
-    @Override
     public boolean onTouchEvent(MotionEvent event) {
         mDetector.onTouchEvent(event);
         return true;
@@ -272,47 +259,64 @@ public class RadarView extends View{
     @Override
     public void computeScroll() {
         if(scroller.computeScrollOffset()){
+
+
             //快滑刷新UI
-//            updateView(scroller.getCurrX(),fastScrollState);
-            Log.e("scroller",scroller.getCurrY()+"");
+            calculationAngle(scroller.getStartX(),scroller.getStartY(),
+                             scroller.getFinalX(),scroller.getFinalY(),
+                    scroller.getStartX()-scroller.getFinalX(),
+                    scroller.getStartY()-scroller.getFinalY());
+
+            postInvalidate();
         }
     }
 
     private GestureDetector.SimpleOnGestureListener mGestureListener=new GestureDetector.SimpleOnGestureListener(){
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            float tempRadius=0;
-            int action=detectDicr(e1.getX(),e1.getY(),e2.getX(),e2.getY());
-            if(action==1||action==2){//上下
-                if(e1.getX()>(getWidth()/2)){
-                    tempRadius=distanceY; //右
-                }else{
-                    tempRadius=-distanceY;//左
-                }
-            }else if(action==3||action==4){//左右
-                if(e1.getY()>(getHeight()/2)){
-                    tempRadius=-distanceX;//下
-                }else{
-                    tempRadius=distanceX; //上
-                }
-            }
-            for(int i=0;i<listAngle.length;i++){
-                listAngle[i]+=(tempRadius);
-            }
+            calculationAngle(e1.getX(),e1.getY(),e2.getX(),e2.getY(),distanceX,distanceY);
             postInvalidate();
             return true;
         }
 
-
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-//            fling(int startX, int startY, int velocityX, int velocityY, int minX, int maxX, int minY, int maxY)
-            Log.e("onFling","onFling");
-            scroller.fling((int)e2.getX(),(int)e2.getY(),(int)velocityX,
-                    (int)velocityY,0,(int)getWidth(),0,(int)getHeight());
+            scroller.fling(0,0,(int)(velocityX/2), (int)(velocityY/2),
+                    0,(int)(getWidth()/50),0,(int)(getHeight()/50));
             return true;
         }
     };
+
+    /**
+     *旋转计算角度
+     * @param startX
+     * @param startY
+     * @param endX
+     * @param endY
+     * @param distanceX
+     * @param distanceY
+     */
+    public void calculationAngle(float startX,float startY,float endX,float endY,float distanceX, float distanceY){
+        Log.e("calculationAngle",distanceX+":"+distanceY);
+        float tempRadius=0;
+        int action=detectDicr(startX,startY,endX,endY);
+        if(action==1||action==2){//上下
+            if(startX>(getWidth()/2)){
+                tempRadius=distanceY; //右
+            }else{
+                tempRadius=-distanceY;//左
+            }
+        }else if(action==3||action==4){//左右
+            if(startY>(getHeight()/2)){
+                tempRadius=-distanceX;//下
+            }else{
+                tempRadius=distanceX; //上
+            }
+        }
+        for(int i=0;i<listAngle.length;i++){
+            listAngle[i]+=(tempRadius);
+        }
+    }
 
     //通过手势来移动方块：1,2,3,4对应上下左右
     private int detectDicr(float start_x,float start_y,float end_x,float end_y){
@@ -332,7 +336,6 @@ public class RadarView extends View{
         }
         return 0;
     }
-
 
     /**
      * 根据距离差判断 滑动方向

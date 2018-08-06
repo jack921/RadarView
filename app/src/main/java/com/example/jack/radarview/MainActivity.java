@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        setData();
+        setData();
 
         RadarView radarView=findViewById(R.id.radarView);
         List<String> listString=new ArrayList<>();
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setData() {
-//        mChart = findViewById(R.id.chart1);
+        mChart = findViewById(R.id.chart1);
         mChart.setBackgroundColor(Color.rgb(60, 65, 82));
         mChart.getDescription().setEnabled(false);
         mChart.setWebLineWidth(1f);

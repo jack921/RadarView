@@ -14,9 +14,9 @@
        app:broad_color="@color/colorPrimary"
        android:background="@color/colorAccent" />
 
-   <!--<com.github.mikephil.charting.charts.RadarChart-->
-       <!--android:id="@+id/chart1"-->
-       <!--android:layout_width="match_parent"-->
-       <!--android:layout_height="300dp" />-->
+   <com.github.mikephil.charting.charts.RadarChart
+       android:id="@+id/chart1"
+       android:layout_width="match_parent"
+       android:layout_height="300dp" />
 
 </LinearLayout>
