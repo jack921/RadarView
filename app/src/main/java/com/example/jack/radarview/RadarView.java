@@ -16,6 +16,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Scroller;
+import android.widget.Switch;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,6 +52,7 @@ public class RadarView extends View{
 
     private float[] listAngle;
 
+    float maxY=0;
 
     public RadarView(Context context) {
         this(context,null);
@@ -251,6 +254,16 @@ public class RadarView extends View{
     }
 
     @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (mDetector != null) {
+            if (mDetector.onTouchEvent(ev))
+                return true;
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         mDetector.onTouchEvent(event);
         return true;
@@ -258,38 +271,45 @@ public class RadarView extends View{
 
     @Override
     public void computeScroll() {
-        super.computeScroll();
+        if(scroller.computeScrollOffset()){
+            //快滑刷新UI
+//            updateView(scroller.getCurrX(),fastScrollState);
+            Log.e("scroller",scroller.getCurrY()+"");
+        }
     }
 
     private GestureDetector.SimpleOnGestureListener mGestureListener=new GestureDetector.SimpleOnGestureListener(){
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             float tempRadius=0;
-            String actionText="";
             int action=detectDicr(e1.getX(),e1.getY(),e2.getX(),e2.getY());
-            if(action==1){//上
-                tempRadius=-(360*((e2.getY()-e1.getY())/display.getHeight()));
-                actionText="上";
-            }else if(action==2){//下
-                tempRadius=360*((e1.getY()-e2.getY())/display.getHeight());
-                actionText="下";
-            }else if(action==3){//左
-                tempRadius=360*((e1.getX()-e2.getX())/display.getWidth());
-                actionText="左";
-            }else if(action==4){//右
-                actionText="右";
-                tempRadius=-(360*((e1.getX()-e2.getX())/display.getWidth()));
+            if(action==1||action==2){//上下
+                if(e1.getX()>(getWidth()/2)){
+                    tempRadius=distanceY; //右
+                }else{
+                    tempRadius=-distanceY;//左
+                }
+            }else if(action==3||action==4){//左右
+                if(e1.getY()>(getHeight()/2)){
+                    tempRadius=-distanceX;//下
+                }else{
+                    tempRadius=distanceX; //上
+                }
             }
             for(int i=0;i<listAngle.length;i++){
-                listAngle[i]-=(tempRadius/10);
+                listAngle[i]+=(tempRadius);
             }
             postInvalidate();
-            Log.e("detectDicr",tempRadius+"");
             return true;
         }
-        @Override
-        public boolean onFling(MotionEvent arg0, MotionEvent arg1, float arg2, float velocityY) {
 
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+//            fling(int startX, int startY, int velocityX, int velocityY, int minX, int maxX, int minY, int maxY)
+            Log.e("onFling","onFling");
+            scroller.fling((int)e2.getX(),(int)e2.getY(),(int)velocityX,
+                    (int)velocityY,0,(int)getWidth(),0,(int)getHeight());
             return true;
         }
     };
