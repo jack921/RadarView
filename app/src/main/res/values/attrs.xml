@@ -6,6 +6,10 @@
         <attr name="broad_text_size" format="dimension"></attr>
         <attr name="mark_color" format="color"></attr>
         <attr name="mark_broad_color" format="color"></attr>
+        <attr name="circle_hold_textSize" format="color"></attr>
+        <attr name="corner_hold_color" format="color"></attr>
+        <attr name="circle_hold_color" format="color"></attr>
+        <attr name="broad_color_text" format="color"></attr>
     </declare-styleable>
 
 </resources>

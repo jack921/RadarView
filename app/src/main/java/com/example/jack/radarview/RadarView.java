@@ -10,17 +10,15 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Scroller;
-import android.widget.Switch;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import rorbin.q.radarview.util.RotateUtil;
 
 public class RadarView extends View{
     private Paint mBroadPaint=new Paint();
@@ -28,14 +26,19 @@ public class RadarView extends View{
     private Paint mMarkPaint=new Paint();
     private Paint mCircleHoldPaint=new Paint();
     private Paint mDrawTextPaint=new Paint();
+    private Paint mHoldTextPaint=new Paint();
 
-    private int broad_color=Color.parseColor("#d1d1d1");
-    private int mark_color=Color.parseColor("#7cfc00");
-    private int mark_broad_color=Color.parseColor("#7cfc00");
+    private int broad_color=Color.parseColor("#585858");
+    private int broad_color_text=Color.parseColor("#88001b");
+    private int mark_color=Color.parseColor("#fdeca6");
+    private int mark_broad_color=Color.parseColor("#ffca18");
+    private int corner_hold_color=Color.parseColor("#ec1c24");
+    private int circle_hold_color=Color.parseColor("#0ed145");
 
     private float mBroadStrokeWidth=1.5f;
     private float mMarkBroadStrokeWidth=1.5f;
     private int corner_textSize;
+    private int circle_hold_textSize;
     private int mMarkEaseAlpha=70;
     private int mBroadAlpha=0;
 
@@ -49,8 +52,10 @@ public class RadarView extends View{
     private Scroller scroller;
 
     private float[] listAngle;
+    private double mPerimeter ;
+    private float mFlingPoint;
+    private boolean drawText=false;
 
-    float maxY=0;
 
     public RadarView(Context context) {
         this(context,null);
@@ -68,23 +73,36 @@ public class RadarView extends View{
             int attr=typedArray.getIndex(i);
             switch(attr){
                 case R.styleable.RadarView_broad_color:
-                    broad_color=typedArray.getColor(attr, Color.parseColor("#d1d1d1"));
+                    broad_color=typedArray.getColor(attr, Color.parseColor("#585858"));
                     break;
                 case R.styleable.RadarView_broad_text_size:
                     corner_textSize=typedArray.getDimensionPixelSize(attr,(int) TypedValue.applyDimension(
                             TypedValue.COMPLEX_UNIT_SP,16,getResources().getDisplayMetrics()));
                     break;
                 case R.styleable.RadarView_mark_color:
-                    broad_color=typedArray.getColor(attr, Color.parseColor("#7cfc00"));
+                    mark_color=typedArray.getColor(attr, Color.parseColor("#fdeca6"));
                     break;
                 case R.styleable.RadarView_mark_broad_color:
-                    mark_broad_color=typedArray.getColor(attr,Color.parseColor("#7cfc00"));
+                    mark_broad_color=typedArray.getColor(attr,Color.parseColor("#ffca18"));
                     break;
-
+                case R.styleable.RadarView_circle_hold_textSize:
+                    circle_hold_textSize=typedArray.getDimensionPixelSize(attr, (int) TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_SP,12,getResources().getDisplayMetrics()));
+                    break;
+                case R.styleable.RadarView_corner_hold_color:
+                    corner_hold_color=typedArray.getColor(attr,Color.parseColor("ec1c24"));
+                    break;
+                case R.styleable.RadarView_broad_color_text:
+                    broad_color_text=typedArray.getColor(attr,Color.parseColor("#88001b"));
+                    break;
             }
         }
         typedArray.recycle();
         initValue();
+    }
+
+    public void setDrawText(boolean drawText) {
+        this.drawText = drawText;
     }
 
     public void setData(List<Float> listData){
@@ -129,11 +147,17 @@ public class RadarView extends View{
         }
     }
 
+    public void setCircleHoldTextSize(int circle_hold_textSize) {
+        this.circle_hold_textSize = circle_hold_textSize;
+    }
+
     public void initValue(){
         scroller=new Scroller(getContext());
         mDetector=new GestureDetector(getContext(),mGestureListener);
         corner_textSize=(int)TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP,16,getResources().getDisplayMetrics());
+        circle_hold_textSize=(int)TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP,13,getResources().getDisplayMetrics());
 
         mBroadPaint.setColor(broad_color);
         mBroadPaint.setStyle(Paint.Style.STROKE);
@@ -150,13 +174,20 @@ public class RadarView extends View{
         mMarkEasePaint.setStyle(Paint.Style.FILL_AND_STROKE);
         mMarkEasePaint.setAlpha(mMarkEaseAlpha);
 
-        mCircleHoldPaint=new Paint();
         mCircleHoldPaint.setAntiAlias(true);
         mCircleHoldPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        mCircleHoldPaint.setColor(circle_hold_color);
 
-        mDrawTextPaint=new Paint();
         mDrawTextPaint.setTextSize(corner_textSize);
-        mDrawTextPaint.setColor(broad_color);
+        mDrawTextPaint.setColor(broad_color_text);
+        mDrawTextPaint.setStyle(Paint.Style.STROKE);
+        mDrawTextPaint.setAntiAlias(true);
+
+        mHoldTextPaint.setTextSize(circle_hold_textSize);
+        mHoldTextPaint.setColor(corner_hold_color);
+        mDrawTextPaint.setStyle(Paint.Style.STROKE);
+        mDrawTextPaint.setAntiAlias(true);
+
     }
 
     @Override
@@ -184,6 +215,7 @@ public class RadarView extends View{
     protected void onSizeChanged(int width, int height, int oldw, int oldh) {
         super.onSizeChanged(width, height, oldw, oldh);
         radius=(float)Math.min(width,height)/3;
+        mPerimeter = 2 * Math.PI * radius;
         float tempRedius=(float)360/listData.size();
         listAngle=new float[listData.size()];
         for(int i=0;i<listData.size();i++){
@@ -195,6 +227,9 @@ public class RadarView extends View{
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        if(listAngle.length==0){
+            return;
+        }
         canvas.translate(getWidth()/2,getHeight()/2);
         canvas.rotate(180);
         canvas.save();
@@ -256,40 +291,7 @@ public class RadarView extends View{
         return true;
     }
 
-    @Override
-    public void computeScroll() {
-        if(scroller.computeScrollOffset()){
-//            float tempRadius=0;
-//            Log.e("scroller",scroller.getCurrY()+":"+scroller.getCurrX());
-//            if(angleStatus==0){
-//                tempRadius=scroller.getCurrX();
-//            }else if(angleStatus==1){
-//                tempRadius=-scroller.getCurrY();
-//            }else if(angleStatus==2){
-//                tempRadius=scroller.getCurrY();
-//            }else if(angleStatus==3){
-//                tempRadius=scroller.getCurrX();
-//            }
-//            for(int i=0;i<listAngle.length;i++){
-//                listAngle[i]+=(tempRadius);
-//            }
-//            postInvalidate();
-
-            int x = scroller.getCurrX();
-            int y = scroller.getCurrY();
-            int max = Math.max(Math.abs(x), Math.abs(y));
-
-            Log.e("scroller",scroller.getCurrX()+":"+scroller.getCurrY());
-
-            for(int i=0;i<listAngle.length;i++){
-                listAngle[i]+=(max);
-            }
-            initValue();
-        }
-    }
-
     private GestureDetector.SimpleOnGestureListener mGestureListener=new GestureDetector.SimpleOnGestureListener(){
-
         @Override
         public boolean onDown(MotionEvent e) {
             if (!scroller.isFinished()) {
@@ -297,29 +299,48 @@ public class RadarView extends View{
             }
             return true;
         }
-
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            Log.e("test","test1");
             calculationAngle(e1.getX(),e1.getY(),e2.getX(),e2.getY(),distanceX/5,distanceY/5);
             postInvalidate();
             return super.onScroll(e1,e2,distanceX,distanceY);
         }
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            Log.e("test","test2");
-//            scroller.fling((int)e2.getX(),(int)e2.getY(),(int)(velocityX/5), (int)(velocityY/5),
-//                    0,(int)(getWidth()/50),0,(int)(getHeight()/50));
-//            if(Math.abs(velocityX)>Math.abs(velocityY)){
-//                scroller.fling((int) e2.getX(), 0, (int) velocityX, 0,(int)(-(2*Math.PI*radius)+e2.getX()),
-//                        (int)((2*Math.PI*radius)+e2.getX()),0,0);
-//            }else if(Math.abs(velocityX)<Math.abs(velocityY)){
-//                scroller.fling(0, (int)e2.getY(),0,(int)velocityY,0,
-//                        0,(int)(-(2*Math.PI*radius)+e2.getX()),(int)((2*Math.PI*radius)+e2.getX()));
-//            }
+            if(Math.abs(velocityX)>Math.abs(velocityY)){
+                mFlingPoint = e2.getX();
+                scroller.fling((int) e2.getX(), 0, (int)(velocityX), 0,
+                        (int)(-50+e2.getX()),
+                        (int)(50+e2.getX()),0,0);
+            }else if(Math.abs(velocityX)<Math.abs(velocityY)){
+                mFlingPoint = e2.getX();
+                scroller.fling(0, (int)e2.getY(),0,(int)(velocityY),0, 0,
+                        (int)-(50+e2.getY()),
+                        (int)(50+e2.getY()));
+            }
             return super.onFling(e1, e2, velocityX, velocityY);
         }
     };
+
+    @Override
+    public void computeScroll() {
+        if(scroller.computeScrollOffset()){
+            int x = scroller.getCurrX();
+            int y = scroller.getCurrY();
+            double tempRadius=0;
+            int max = Math.max(Math.abs(x),Math.abs(y));
+            double rotateDis = RotateUtil.CIRCLE_ANGLE*(Math.abs(max-mFlingPoint)/mPerimeter);
+            if(angleStatus==0){
+                tempRadius=rotateDis;
+            }else if(angleStatus==1){
+                tempRadius=-rotateDis;
+            }
+            for(int i=0;i<listAngle.length;i++){
+                listAngle[i]+=(tempRadius);
+            }
+            postInvalidate();
+        }
+    }
 
     /**
      *旋转计算角度
@@ -336,21 +357,21 @@ public class RadarView extends View{
         if(action==1||action==2){//上下
             if(startX>(getWidth()/2)){
                 tempRadius=distanceY; //右
-                angleStatus=0;
             }else{
                 tempRadius=-distanceY;//左
-                angleStatus=1;
             }
         }else if(action==3||action==4){//左右
             if(startY>(getHeight()/2)){
                 tempRadius=-distanceX;//下
-                angleStatus=2;
             }else{
                 tempRadius=distanceX;//上
-                angleStatus=3;
             }
         }
-        Log.e("tempRadius",tempRadius+"");
+        if(tempRadius>0){
+            angleStatus=0;
+        }else{
+            angleStatus=1;
+        }
         for(int i=0;i<listAngle.length;i++){
             listAngle[i]+=(tempRadius);
         }
@@ -429,6 +450,20 @@ public class RadarView extends View{
         for(int i=0;i<listAngle.length;i++){
             float tempRadius= (listData.get(i)/maxValue)*radius;
             float[] tempAngle=getAngle(tempRadius,listAngle[i]);
+            if(drawText){
+                canvas.save();
+                canvas.translate(tempAngle[0],tempAngle[1]);
+                float textWidth = mHoldTextPaint.measureText(listData.get(i)+"");
+                float baseLineY = Math.abs(mHoldTextPaint.ascent()+mHoldTextPaint.descent())/2;
+                canvas.rotate(-180);
+                if(((int)tempAngle[0])==0){
+                    canvas.drawText(listData.get(i)+"",-textWidth/2,-baseLineY,mHoldTextPaint);
+                }else{
+                    canvas.drawText(listData.get(i)+"",tempAngle[0]>0?-textWidth:0,
+                            tempAngle[1]>0?-baseLineY:baseLineY*2,mHoldTextPaint);
+                }
+                canvas.restore();
+            }
             canvas.drawCircle(tempAngle[0],tempAngle[1],5,mCircleHoldPaint);
         }
     }

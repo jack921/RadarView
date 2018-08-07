@@ -10,12 +10,15 @@
    <com.example.jack.radarview.RadarView
        android:id="@+id/radarView"
        android:layout_width="match_parent"
-       android:layout_height="wrap_content"
-       app:broad_color="@color/colorPrimary"
-       android:background="@color/colorAccent" />
+       android:layout_height="wrap_content"/>
 
-   <com.github.mikephil.charting.charts.RadarChart
-       android:id="@+id/chart1"
+   <!--<com.github.mikephil.charting.charts.RadarChart-->
+       <!--android:id="@+id/chart1"-->
+       <!--android:layout_width="match_parent"-->
+       <!--android:layout_height="300dp" />-->
+
+   <com.example.jack.radarview.RadarView2
+       android:id="@+id/chart2"
        android:layout_width="match_parent"
        android:layout_height="300dp" />
 
