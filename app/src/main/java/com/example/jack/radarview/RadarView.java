@@ -7,14 +7,14 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Scroller;
-
-import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,16 +83,13 @@ public class RadarView extends View {
             int attr = typedArray.getIndex(i);
             switch (attr) {
                 case R.styleable.RadarView_broad_text_size:
-                    corner_textSize = typedArray.getDimensionPixelSize(attr, (int) TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_SP, 16, getResources().getDisplayMetrics()));
+                    corner_textSize = convertDpToPixel(16);
                     break;
                 case R.styleable.RadarView_circle_hold_textSize:
-                    circle_hold_textSize = typedArray.getDimensionPixelSize(attr, (int) TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
+                    circle_hold_textSize = convertDpToPixel(12);
                     break;
                 case R.styleable.RadarView_interval_text_size:
-                    mIntervalTextSize = typedArray.getDimensionPixelSize(attr, (int) TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_SP, 10, getResources().getDisplayMetrics()));
+                    mIntervalTextSize = convertDpToPixel(10);
                     break;
                 case R.styleable.RadarView_mark_color:
                     mark_color = typedArray.getColor(attr, Color.parseColor("#FDECA6"));
@@ -236,6 +233,7 @@ public class RadarView extends View {
         mDrawTextPaint.setTextSize(corner_textSize);
         mDrawTextPaint.setColor(broad_color_text);
         mDrawTextPaint.setStyle(Paint.Style.STROKE);
+        mDrawTextPaint.setTextAlign(Paint.Align.CENTER);
         mDrawTextPaint.setAntiAlias(true);
 
         mHoldTextPaint.setTextSize(circle_hold_textSize);
@@ -315,7 +313,6 @@ public class RadarView extends View {
 
     /**
      * 画各个区间数值提示
-     *
      * @param canvas
      * @param radius
      */
@@ -330,14 +327,15 @@ public class RadarView extends View {
             canvas.translate(temp[0], temp[1]);
             canvas.rotate(-180);
             float data = marginData * i;
-            canvas.drawText(data + "", 0, 0, mIntervalTextPaint);
+            Rect mCenterRect=new Rect();
+            mIntervalTextPaint.getTextBounds(data+"",0,(data+"").length(),mCenterRect);
+            canvas.drawText(data+"",0, temp[1]>0?mCenterRect.height():-mCenterRect.height(), mIntervalTextPaint);
             canvas.restore();
         }
     }
 
     /**
      * 画出雷达图的边
-     *
      * @param canvas
      * @param radius
      * @param angle
@@ -573,13 +571,14 @@ public class RadarView extends View {
             canvas.save();
             float[] temp = getAngle(radius, listAngle[i]);
             canvas.translate(temp[0], temp[1]);
-            float textWidth = mDrawTextPaint.measureText(cornerName.get(i));
-            float baseLineY = Math.abs(mDrawTextPaint.ascent() + mDrawTextPaint.descent()) / 2;
             canvas.rotate(-180);
-            if (-8 < ((int) temp[0]) && ((int) temp[0]) <= 8) {
-                canvas.drawText(cornerName.get(i), -textWidth / 2, -baseLineY, mDrawTextPaint);
+            Rect mCenterRect=new Rect();
+            mIntervalTextPaint.getTextBounds(cornerName.get(i)+"",0,cornerName.get(i).length(),mCenterRect);
+            if (-1<((int)temp[0])&&((int)temp[0])<=1) {
+                canvas.drawText(cornerName.get(i),0,temp[1]>0?-(mCenterRect.height()/2):mCenterRect.height()+5,mDrawTextPaint);
             } else {
-                canvas.drawText(cornerName.get(i), temp[0] > 0 ? -textWidth : 0, temp[1] > 0 ? -baseLineY : baseLineY * 2, mDrawTextPaint);
+               canvas.drawText(cornerName.get(i),temp[0]>0?-(mCenterRect.width()/2):(mCenterRect.width()/2),
+                       temp[1]>0?-(mCenterRect.height()/2):mCenterRect.height(), mDrawTextPaint);
             }
             canvas.restore();
         }
