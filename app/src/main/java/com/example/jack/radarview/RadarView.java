@@ -83,13 +83,16 @@ public class RadarView extends View {
             int attr = typedArray.getIndex(i);
             switch (attr) {
                 case R.styleable.RadarView_broad_text_size:
-                    corner_textSize = convertDpToPixel(16);
+                    corner_textSize = typedArray.getDimensionPixelSize(attr, (int)TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_SP,15,getResources().getDisplayMetrics()));
                     break;
                 case R.styleable.RadarView_circle_hold_textSize:
-                    circle_hold_textSize = convertDpToPixel(12);
+                    circle_hold_textSize = typedArray.getDimensionPixelSize(attr,(int)TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_SP,12,getResources().getDisplayMetrics()));
                     break;
                 case R.styleable.RadarView_interval_text_size:
-                    mIntervalTextSize = convertDpToPixel(10);
+                    mIntervalTextSize = typedArray.getDimensionPixelSize(attr, (int)TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_SP,10,getResources().getDisplayMetrics()));
                     break;
                 case R.styleable.RadarView_mark_color:
                     mark_color = typedArray.getColor(attr, Color.parseColor("#FDECA6"));
@@ -205,9 +208,9 @@ public class RadarView extends View {
         scroller = new Scroller(getContext());
         mDetector = new GestureDetector(getContext(), mGestureListener);
         corner_textSize = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_SP, 16, getResources().getDisplayMetrics());
+                TypedValue.COMPLEX_UNIT_SP, 15, getResources().getDisplayMetrics());
         circle_hold_textSize = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_SP, 13, getResources().getDisplayMetrics());
+                TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics());
         mIntervalTextSize = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, 10, getResources().getDisplayMetrics());
 
