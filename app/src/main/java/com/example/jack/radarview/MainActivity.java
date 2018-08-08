@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
         listString.add("发育");
         listString.add("团战");
         listString.add("生存");
+        listString.add("测试");
         radarView.setCornerName(listString);
 
         List<Float> listData=new ArrayList<>();
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         listData.add(6f);
         listData.add(8f);
         listData.add(5f);
+        listData.add(3f);
         radarView.setData(listData);
         radarView.setMaxValue(10f);
         radarView.setDrawText(true);

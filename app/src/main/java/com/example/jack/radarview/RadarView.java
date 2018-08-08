@@ -286,6 +286,7 @@ public class RadarView extends View{
      * @param angle
      */
     public void drawRadarBroad(Canvas canvas,float radius){
+        Log.e("drawRadarBroad",radius+"");
         Path path=new Path();
         for(int i=0;i<listAngle.length;i++){
             float[] temp=getAngle(radius,listAngle[i]);
@@ -297,6 +298,7 @@ public class RadarView extends View{
         }
         float[] lastPoint=getAngle(radius,listAngle[0]);
         path.lineTo(lastPoint[0],lastPoint[1]);
+        mBroadPaint.setAlpha(mBroadAlpha);
         canvas.drawPath(path,mBroadPaint);
     }
 
@@ -306,6 +308,7 @@ public class RadarView extends View{
      * @param radius
      */
     public void drawPointLine(Canvas canvas,float radius){
+        Log.e("drawPointLine",radius+"");
         for(int i=0;i<listAngle.length;i++){
             Path path=new Path();
             path.moveTo(0,0);
