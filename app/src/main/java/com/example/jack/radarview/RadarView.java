@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import rorbin.q.radarview.util.RotateUtil;
 
 public class RadarView extends View{
     private Paint mBroadPaint=new Paint();
@@ -28,34 +27,37 @@ public class RadarView extends View{
     private Paint mDrawTextPaint=new Paint();
     private Paint mHoldTextPaint=new Paint();
 
-    private int broad_color=Color.parseColor("#585858");
-    private int broad_color_text=Color.parseColor("#88001b");
-    private int mark_color=Color.parseColor("#fdeca6");
-    private int mark_broad_color=Color.parseColor("#ffca18");
-    private int corner_hold_color=Color.parseColor("#ec1c24");
-    private int circle_hold_color=Color.parseColor("#0ed145");
+    public static final double CIRCLE_ANGLE = 2 * Math.PI;
+    private int broad_color=Color.parseColor("#585858");//边的颜色
+    private int broad_color_text=Color.parseColor("#88001B");//角的字体颜色
+    private int mark_color=Color.parseColor("#FDECA6");//数值区域颜色
+    private int mark_broad_color=Color.parseColor("#FFCA18");//数值边的颜色
+    private int corner_hold_color=Color.parseColor("#EC1C24");//数组提示字体的颜色
+    private int circle_hold_color=Color.parseColor("#008B8B");//数值区域点的颜色
 
-    private float mBroadStrokeWidth=1.5f;
-    private float mMarkBroadStrokeWidth=1.5f;
-    private int corner_textSize;
-    private int circle_hold_textSize;
-    private int mMarkEaseAlpha=70;
-    private int mBroadAlpha=0;
+    private float mBroadStrokeWidth=1.5f;//边的粗细
+    private float mMarkBroadStrokeWidth=1.5f;//数值区域边的粗细
+    private int corner_textSize;//边角的字体的大小
+    private int circle_hold_textSize;//数组提示字体的大小
+    private int mMarkEaseAlpha=70;//数值区域的透明度
+    private int mBroadAlpha=225;//各个边的连线的透明度
 
-    private List<String> cornerName=new ArrayList<>();
+    private List<String> cornerName=new ArrayList<>();//角的名字的集合
     private List<Float> listData=new ArrayList<>();
-    private int angleStatus=0;
-    private float maxValue=0f;
-    private Float radius=0f;
+    private int angleStatus=0;//角的状态
+    private float maxValue=0f;//最大值
+    private Float radius=0f;//画图的半径
+
+    private float[] listAngle;//所有角的集合
+    private boolean drawText=false;//画不画数组提示
+    private long duration=3000;//动画时间
+    private boolean openDuration=true;//是否开启动画
+
+    private double mPerimeter;
+    private float mFlingPoint;
 
     private GestureDetector mDetector;
     private Scroller scroller;
-
-    private float[] listAngle;
-    private double mPerimeter ;
-    private float mFlingPoint;
-    private boolean drawText=false;
-
 
     public RadarView(Context context) {
         this(context,null);
@@ -72,28 +74,31 @@ public class RadarView extends View{
         for(int i=0;i<numCount;i++){
             int attr=typedArray.getIndex(i);
             switch(attr){
-                case R.styleable.RadarView_broad_color:
-                    broad_color=typedArray.getColor(attr, Color.parseColor("#585858"));
-                    break;
                 case R.styleable.RadarView_broad_text_size:
                     corner_textSize=typedArray.getDimensionPixelSize(attr,(int) TypedValue.applyDimension(
                             TypedValue.COMPLEX_UNIT_SP,16,getResources().getDisplayMetrics()));
-                    break;
-                case R.styleable.RadarView_mark_color:
-                    mark_color=typedArray.getColor(attr, Color.parseColor("#fdeca6"));
-                    break;
-                case R.styleable.RadarView_mark_broad_color:
-                    mark_broad_color=typedArray.getColor(attr,Color.parseColor("#ffca18"));
                     break;
                 case R.styleable.RadarView_circle_hold_textSize:
                     circle_hold_textSize=typedArray.getDimensionPixelSize(attr, (int) TypedValue.applyDimension(
                             TypedValue.COMPLEX_UNIT_SP,12,getResources().getDisplayMetrics()));
                     break;
+                case R.styleable.RadarView_mark_color:
+                    mark_color=typedArray.getColor(attr, Color.parseColor("#FDECA6"));
+                    break;
+                case R.styleable.RadarView_mark_broad_color:
+                    mark_broad_color=typedArray.getColor(attr,Color.parseColor("#FFCA18"));
+                    break;
                 case R.styleable.RadarView_corner_hold_color:
-                    corner_hold_color=typedArray.getColor(attr,Color.parseColor("ec1c24"));
+                    corner_hold_color=typedArray.getColor(attr,Color.parseColor("EC1C24"));
                     break;
                 case R.styleable.RadarView_broad_color_text:
-                    broad_color_text=typedArray.getColor(attr,Color.parseColor("#88001b"));
+                    broad_color_text=typedArray.getColor(attr,Color.parseColor("#88001B"));
+                    break;
+                case R.styleable.RadarView_circle_hold_color:
+                    circle_hold_color=typedArray.getColor(attr,Color.parseColor("#008B8B"));
+                    break;
+                case R.styleable.RadarView_broad_color:
+                    broad_color=typedArray.getColor(attr, Color.parseColor("#585858"));
                     break;
             }
         }
@@ -114,41 +119,66 @@ public class RadarView extends View{
         this.maxValue = maxValue;
     }
 
+    public void setBroadColor(int broad_color) {
+        this.broad_color = broad_color;
+    }
+
+    public void setBroadColorText(int broad_color_text) {
+        this.broad_color_text = broad_color_text;
+    }
+
+    public void setMarkColor(int mark_color) {
+        this.mark_color = mark_color;
+    }
+
+    public void setMarkBroadColor(int mark_broad_color) {
+        this.mark_broad_color = mark_broad_color;
+    }
+
+    public void setCornerHoldColor(int corner_hold_color) {
+        this.corner_hold_color = corner_hold_color;
+    }
+
+    public void setCircleHoldColor(int circle_hold_color) {
+        this.circle_hold_color = circle_hold_color;
+    }
+
     public void setmBroadStrokeWidth(float mBroadStrokeWidth) {
         this.mBroadStrokeWidth = mBroadStrokeWidth;
     }
+
     public void setmMarkBroadStrokeWidth(float mMarkBroadStrokeWidth) {
         this.mMarkBroadStrokeWidth = mMarkBroadStrokeWidth;
     }
 
-    public void setMarkEaseAlpha(int markEaseAlpha) {
-        this.mMarkEaseAlpha = markEaseAlpha;
+    public void setCornerTextSize(int corner_textSize) {
+        this.corner_textSize = convertDpToPixel(corner_textSize);
     }
 
-    public void setCorneTextSize(int cornerTextSize){
-        this.corner_textSize=cornerTextSize;
+    public void setCircleHoldTextSize(int circle_hold_textSize) {
+        this.circle_hold_textSize = convertDpToPixel(circle_hold_textSize);
     }
 
-    public void setBroadColor(int broadColor){
-        this.broad_color=broadColor;
+    public void setmMarkEaseAlpha(int mMarkEaseAlpha) {
+        this.mMarkEaseAlpha = mMarkEaseAlpha;
     }
 
-    public void setMarkColor(int markColor){
-        this.mark_color=markColor;
+    public void setmBroadAlpha(int mBroadAlpha) {
+        this.mBroadAlpha = mBroadAlpha;
     }
 
-    public void setMarkBroadColor(int markBroadColor){
-        this.mark_broad_color=mark_broad_color;
+    public void setDuration(long duration){
+        this.duration=duration;
+    }
+
+    public void setOpenDuration(boolean open){
+        this.openDuration=open;
     }
 
     public void setCornerName(List<String> cornerList) {
         if(this.cornerName.size()==0){
             this.cornerName.addAll(cornerList);
         }
-    }
-
-    public void setCircleHoldTextSize(int circle_hold_textSize) {
-        this.circle_hold_textSize = circle_hold_textSize;
     }
 
     public void initValue(){
@@ -187,7 +217,6 @@ public class RadarView extends View{
         mHoldTextPaint.setColor(corner_hold_color);
         mDrawTextPaint.setStyle(Paint.Style.STROKE);
         mDrawTextPaint.setAntiAlias(true);
-
     }
 
     @Override
@@ -221,7 +250,9 @@ public class RadarView extends View{
         for(int i=0;i<listData.size();i++){
             listAngle[i]=tempRedius*(i+1);
         }
-        loadStartAnimator();
+        if(this.openDuration){
+            loadStartAnimator();
+        }
     }
 
     @Override
@@ -329,7 +360,7 @@ public class RadarView extends View{
             int y = scroller.getCurrY();
             double tempRadius=0;
             int max = Math.max(Math.abs(x),Math.abs(y));
-            double rotateDis = RotateUtil.CIRCLE_ANGLE*(Math.abs(max-mFlingPoint)/mPerimeter);
+            double rotateDis =CIRCLE_ANGLE*(Math.abs(max-mFlingPoint)/mPerimeter);
             if(angleStatus==0){
                 tempRadius=rotateDis;
             }else if(angleStatus==1){
@@ -487,6 +518,9 @@ public class RadarView extends View{
      * @param radius
      */
     public void drawText(Canvas canvas,float radius){
+        if(cornerName.size()==0){
+            return;
+        }
        for(int i=0;i<listAngle.length;i++){
            canvas.save();
            float[] temp=getAngle(radius,listAngle[i]);
@@ -494,7 +528,7 @@ public class RadarView extends View{
            float textWidth = mDrawTextPaint.measureText(cornerName.get(i));
            float baseLineY = Math.abs(mDrawTextPaint.ascent()+mDrawTextPaint.descent())/2;
            canvas.rotate(-180);
-           if(((int)temp[0])==0){
+           if(-8<((int)temp[0])&&((int)temp[0])<=8){
                canvas.drawText(cornerName.get(i),-textWidth/2,-baseLineY,mDrawTextPaint);
            }else{
                canvas.drawText(cornerName.get(i),temp[0]>0?-textWidth:0,temp[1]>0?-baseLineY:baseLineY*2,mDrawTextPaint);
@@ -533,8 +567,8 @@ public class RadarView extends View{
                 postInvalidate();
             }
         });
-        alphaAnimator.setDuration(3000);
-        radiusAnimator.setDuration(3000);
+        alphaAnimator.setDuration(duration);
+        radiusAnimator.setDuration(duration);
         alphaAnimator.start();
         radiusAnimator.start();
     }

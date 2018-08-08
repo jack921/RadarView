@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         radarView.setData(listData);
         radarView.setMaxValue(10f);
         radarView.setDrawText(true);
+        radarView.setOpenDuration(true);
 
     }
 
