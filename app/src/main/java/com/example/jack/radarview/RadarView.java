@@ -98,7 +98,7 @@ public class RadarView extends View {
                     mark_broad_color = typedArray.getColor(attr, Color.parseColor("#FFCA18"));
                     break;
                 case R.styleable.RadarView_corner_hold_color:
-                    corner_hold_color = typedArray.getColor(attr, Color.parseColor("EC1C24"));
+                    corner_hold_color = typedArray.getColor(attr, Color.parseColor("#EC1C24"));
                     break;
                 case R.styleable.RadarView_broad_color_text:
                     broad_color_text = typedArray.getColor(attr, Color.parseColor("#88001B"));
@@ -358,7 +358,6 @@ public class RadarView extends View {
 
     /**
      * 画出五条中心点对边
-     *
      * @param canvas
      * @param radius
      */
@@ -434,7 +433,6 @@ public class RadarView extends View {
 
     /**
      * 旋转计算角度
-     *
      * @param startX
      * @param startY
      * @param endX
@@ -489,7 +487,6 @@ public class RadarView extends View {
 
     /**
      * 画出数值区域
-     *
      * @param canvas
      * @param radius
      */
@@ -514,7 +511,6 @@ public class RadarView extends View {
 
     /**
      * 画出各个点
-     *
      * @param canvas
      * @param radius
      */
@@ -545,7 +541,6 @@ public class RadarView extends View {
 
     /**
      * 通过各个边得到各个点
-     *
      * @param radius
      * @param angle
      * @return
@@ -559,7 +554,6 @@ public class RadarView extends View {
 
     /**
      * 画出雷达图的各个角的提示
-     *
      * @param canvas
      * @param radius
      */
@@ -574,11 +568,15 @@ public class RadarView extends View {
             canvas.rotate(-180);
             Rect mCenterRect=new Rect();
             mIntervalTextPaint.getTextBounds(cornerName.get(i)+"",0,cornerName.get(i).length(),mCenterRect);
-            if (-1<((int)temp[0])&&((int)temp[0])<=1) {
-                canvas.drawText(cornerName.get(i),0,temp[1]>0?-(mCenterRect.height()/2):mCenterRect.height()+5,mDrawTextPaint);
+            if (-0.6<((int)temp[0])&&((int)temp[0])<=0.6) {
+                canvas.drawText(cornerName.get(i),0,
+                        temp[1]>0?-(mCenterRect.height()/2)
+                        :mCenterRect.height()*2,mDrawTextPaint);
             } else {
-               canvas.drawText(cornerName.get(i),temp[0]>0?-(mCenterRect.width()/2):(mCenterRect.width()/2),
-                       temp[1]>0?-(mCenterRect.height()/2):mCenterRect.height(), mDrawTextPaint);
+                canvas.drawText(cornerName.get(i),
+                        temp[0]>0?-(mCenterRect.width()):(mCenterRect.width()),
+                        temp[1]>0?-(mCenterRect.height()/2):mCenterRect.height(),
+                        mDrawTextPaint);
             }
             canvas.restore();
         }
@@ -586,7 +584,6 @@ public class RadarView extends View {
 
     /**
      * 数字转化为dp
-     *
      * @param value
      * @return
      */
