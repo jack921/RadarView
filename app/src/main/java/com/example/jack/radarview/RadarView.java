@@ -29,7 +29,6 @@ public class RadarView extends View {
     private Paint mHoldTextPaint = new Paint();//数值点文字
     private Paint mIntervalTextPaint = new Paint();//区间点
 
-    public static final double CIRCLE_ANGLE = 2 * Math.PI;
     private int broad_color = Color.parseColor("#585858");//边的颜色
     private int broad_color_text = Color.parseColor("#88001B");//角的字体颜色
     private int mark_color = Color.parseColor("#FDECA6");//数值区域颜色
@@ -58,10 +57,9 @@ public class RadarView extends View {
     private boolean openDuration = true;//是否开启动画
     private boolean openDataEasePoint = true;//是否开启区域数值提示
 
-    private int marginNum = 4;
-    private float margin;
+    private int marginNum = 4; //画多少个雷达图的边
+    private float margin; //每个雷达图边的间隔
 
-    private double mPerimeter;
     private float mFlingPoint;
 
     private GestureDetector mDetector;
@@ -73,52 +71,6 @@ public class RadarView extends View {
 
     public RadarView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
-    }
-
-    public RadarView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        TypedArray typedArray = context.getTheme().obtainStyledAttributes(attrs, R.styleable.RadarView, defStyleAttr, 0);
-        int numCount = typedArray.getIndexCount();
-        for (int i = 0; i < numCount; i++) {
-            int attr = typedArray.getIndex(i);
-            switch (attr) {
-                case R.styleable.RadarView_broad_text_size:
-                    corner_textSize = typedArray.getDimensionPixelSize(attr, (int)TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_SP,15,getResources().getDisplayMetrics()));
-                    break;
-                case R.styleable.RadarView_circle_hold_textSize:
-                    circle_hold_textSize = typedArray.getDimensionPixelSize(attr,(int)TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_SP,12,getResources().getDisplayMetrics()));
-                    break;
-                case R.styleable.RadarView_interval_text_size:
-                    mIntervalTextSize = typedArray.getDimensionPixelSize(attr, (int)TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_SP,10,getResources().getDisplayMetrics()));
-                    break;
-                case R.styleable.RadarView_mark_color:
-                    mark_color = typedArray.getColor(attr, Color.parseColor("#FDECA6"));
-                    break;
-                case R.styleable.RadarView_mark_broad_color:
-                    mark_broad_color = typedArray.getColor(attr, Color.parseColor("#FFCA18"));
-                    break;
-                case R.styleable.RadarView_corner_hold_color:
-                    corner_hold_color = typedArray.getColor(attr, Color.parseColor("#EC1C24"));
-                    break;
-                case R.styleable.RadarView_broad_color_text:
-                    broad_color_text = typedArray.getColor(attr, Color.parseColor("#88001B"));
-                    break;
-                case R.styleable.RadarView_circle_hold_color:
-                    circle_hold_color = typedArray.getColor(attr, Color.parseColor("#008B8B"));
-                    break;
-                case R.styleable.RadarView_broad_color:
-                    broad_color = typedArray.getColor(attr, Color.parseColor("#585858"));
-                    break;
-                case R.styleable.RadarView_interval_text_color:
-                    interval_text_color = typedArray.getColor(attr, Color.parseColor("#2F4F4F"));
-                    break;
-            }
-        }
-        typedArray.recycle();
-        initValue();
     }
 
     public void setDrawText(boolean drawText) {
@@ -204,6 +156,52 @@ public class RadarView extends View {
         }
     }
 
+    public RadarView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        TypedArray typedArray = context.getTheme().obtainStyledAttributes(attrs, R.styleable.RadarView, defStyleAttr, 0);
+        int numCount = typedArray.getIndexCount();
+        for (int i = 0; i < numCount; i++) {
+            int attr = typedArray.getIndex(i);
+            switch (attr) {
+                case R.styleable.RadarView_broad_text_size:
+                    corner_textSize = typedArray.getDimensionPixelSize(attr, (int)TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_SP,15,getResources().getDisplayMetrics()));
+                    break;
+                case R.styleable.RadarView_circle_hold_textSize:
+                    circle_hold_textSize = typedArray.getDimensionPixelSize(attr,(int)TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_SP,12,getResources().getDisplayMetrics()));
+                    break;
+                case R.styleable.RadarView_interval_text_size:
+                    mIntervalTextSize = typedArray.getDimensionPixelSize(attr, (int)TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_SP,10,getResources().getDisplayMetrics()));
+                    break;
+                case R.styleable.RadarView_mark_color:
+                    mark_color = typedArray.getColor(attr, Color.parseColor("#FDECA6"));
+                    break;
+                case R.styleable.RadarView_mark_broad_color:
+                    mark_broad_color = typedArray.getColor(attr, Color.parseColor("#FFCA18"));
+                    break;
+                case R.styleable.RadarView_corner_hold_color:
+                    corner_hold_color = typedArray.getColor(attr, Color.parseColor("#EC1C24"));
+                    break;
+                case R.styleable.RadarView_broad_color_text:
+                    broad_color_text = typedArray.getColor(attr, Color.parseColor("#88001B"));
+                    break;
+                case R.styleable.RadarView_circle_hold_color:
+                    circle_hold_color = typedArray.getColor(attr, Color.parseColor("#008B8B"));
+                    break;
+                case R.styleable.RadarView_broad_color:
+                    broad_color = typedArray.getColor(attr, Color.parseColor("#585858"));
+                    break;
+                case R.styleable.RadarView_interval_text_color:
+                    interval_text_color = typedArray.getColor(attr, Color.parseColor("#2F4F4F"));
+                    break;
+            }
+        }
+        typedArray.recycle();
+        initValue();
+    }
+
     public void initValue() {
         scroller = new Scroller(getContext());
         mDetector = new GestureDetector(getContext(), mGestureListener);
@@ -241,8 +239,9 @@ public class RadarView extends View {
 
         mHoldTextPaint.setTextSize(circle_hold_textSize);
         mHoldTextPaint.setColor(corner_hold_color);
-        mDrawTextPaint.setStyle(Paint.Style.STROKE);
-        mDrawTextPaint.setAntiAlias(true);
+        mHoldTextPaint.setStyle(Paint.Style.STROKE);
+        mHoldTextPaint.setTextAlign(Paint.Align.CENTER);
+        mHoldTextPaint.setAntiAlias(true);
 
         mIntervalTextPaint.setTextSize(mIntervalTextSize);
         mIntervalTextPaint.setStyle(Paint.Style.STROKE);
@@ -278,7 +277,6 @@ public class RadarView extends View {
         super.onSizeChanged(width, height, oldw, oldh);
         radius = (float) Math.min(width, height) / 3;
         margin = radius / 4;
-        mPerimeter = 2 * Math.PI * radius;
         float tempRedius = (float) 360 / listData.size();
         listAngle = new float[listData.size()];
         for (int i = 0; i < listData.size(); i++) {
@@ -389,16 +387,16 @@ public class RadarView extends View {
             }
             return true;
         }
-
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             calculationAngle(e1.getX(), e1.getY(), e2.getX(), e2.getY(), distanceX / 5, distanceY / 5);
             postInvalidate();
             return super.onScroll(e1, e2, distanceX, distanceY);
         }
-
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            Log.e("onFling",Math.abs(velocityX)+":"+Math.abs(velocityY));
+
             if (Math.abs(velocityX) > Math.abs(velocityY)) {
                 mFlingPoint = e2.getX();
                 scroller.fling((int) e2.getX(), 0, (int) (velocityX), 0,
@@ -421,7 +419,7 @@ public class RadarView extends View {
             int y = scroller.getCurrY();
             double tempRadius = 0;
             int max = Math.max(Math.abs(x), Math.abs(y));
-            double rotateDis = CIRCLE_ANGLE * (Math.abs(max - mFlingPoint) / mPerimeter);
+            double rotateDis =  Math.abs(max - mFlingPoint)/radius;
             if (angleStatus == 0) {
                 tempRadius = rotateDis;
             } else if (angleStatus == 1) {
@@ -527,15 +525,11 @@ public class RadarView extends View {
             if (drawText) {
                 canvas.save();
                 canvas.translate(tempAngle[0], tempAngle[1]);
-                float textWidth = mHoldTextPaint.measureText(listData.get(i) + "");
-                float baseLineY = Math.abs(mHoldTextPaint.ascent() + mHoldTextPaint.descent()) / 2;
+                Rect mCenterRect=new Rect();
+                mHoldTextPaint.getTextBounds(cornerName.get(i)+"",0,cornerName.get(i).length(),mCenterRect);
                 canvas.rotate(-180);
-                if (((int) tempAngle[0]) == 0) {
-                    canvas.drawText(listData.get(i) + "", -textWidth / 2, -baseLineY, mHoldTextPaint);
-                } else {
-                    canvas.drawText(listData.get(i) + "", tempAngle[0] > 0 ? -textWidth : 0,
-                            tempAngle[1] > 0 ? -baseLineY : baseLineY * 2, mHoldTextPaint);
-                }
+                canvas.drawText(listData.get(i)+"",tempAngle[0]>0?-mCenterRect.width()/2:mCenterRect.width()/2,
+                            tempAngle[1]>0?-mCenterRect.height()/2:mCenterRect.height()/2,mHoldTextPaint);
                 canvas.restore();
             }
             canvas.drawCircle(tempAngle[0], tempAngle[1], 5, mCircleHoldPaint);
@@ -570,7 +564,7 @@ public class RadarView extends View {
             canvas.translate(temp[0], temp[1]);
             canvas.rotate(-180);
             Rect mCenterRect=new Rect();
-            mIntervalTextPaint.getTextBounds(cornerName.get(i)+"",0,cornerName.get(i).length(),mCenterRect);
+            mDrawTextPaint.getTextBounds(cornerName.get(i)+"",0,cornerName.get(i).length(),mCenterRect);
             if (-0.6<((int)temp[0])&&((int)temp[0])<=0.6) {
                 canvas.drawText(cornerName.get(i),0,
                         temp[1]>0?-(mCenterRect.height()/2)
