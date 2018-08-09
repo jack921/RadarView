@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+
 public class RadarView extends View {
     private Paint mBroadPaint = new Paint();//边
     private Paint mMarkEasePaint = new Paint();//数值面积
